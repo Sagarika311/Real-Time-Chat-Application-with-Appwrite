@@ -91,9 +91,12 @@ VITE_APPWRITE_PROJECT_ID=your_project_id
 
 ## 📸 Screenshots
 
-| Auth Pages                 | Chat UI                       |
-| -------------------------- | ----------------------------- |
-| ![Login](assets/login.png) ![Signup](assets/signup.png) | ![Chat Light](assets/chat-light.png) <br> ![Chat Dark](assets/chat-dark.png) |
+| Page / Feature | Screenshot |
+| -------------- | ---------- |
+| Login          | ![Login](assets/login.png) |
+| Signup         | ![Signup](assets/signup.png) |
+| Chat Light     | ![Chat Light](assets/chat-light.png) |
+| Chat Dark      | ![Chat Dark](assets/chat-dark.png) |
 
 ---
 
