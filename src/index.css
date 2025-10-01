@@ -1,0 +1,425 @@
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Instagram-inspired gradient colors */
+  --primary-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  --secondary-gradient: linear-gradient(45deg, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+  --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --dark-bg-start: #121212;
+  --dark-bg-mid: #1c1c1c;
+  --dark-bg-end: #222222;
+  --dark-bg-alt: #181818;
+  --light-bg: #ffffff;
+  --sidebar-bg: #fafafa;
+  --text-primary: #262626; /* Instagram dark text */
+  --text-secondary: #8e8e8e;
+  --text-light: #fafafa;
+  --border-color: #dbdbdb;
+  --border-color-dark: #444444;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+  --glow-cyan: #0ff0fc;
+  --glow-green: #00ff99;
+  --glow-skyblue: #33ccff;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  color: var(--text-primary);
+  background: var(--light-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* prevent page scroll */
+}
+
+main {
+  flex: 1; /* pushes footer to the bottom */
+}
+
+/* Dark mode variables and background gradient */
+.dark {
+  --light-bg: #121212;
+  --light-bg-alt: #181818;
+  --text-primary: var(--text-light);
+  --text-secondary: #b3b3b3;
+  --border-color: var(--border-color-dark);
+  --sidebar-bg: #1c1c1c;
+  background: linear-gradient(180deg, var(--dark-bg-start) 0%, var(--dark-bg-mid) 50%, var(--dark-bg-end) 100%);
+  color: var(--text-light);
+}
+
+/* Dark mode toggle button */
+.dark-mode-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 0.75rem;
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--glow-cyan);
+  transition: transform 0.2s ease;
+  z-index: 1000;
+}
+
+.dark-mode-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 12px var(--glow-cyan);
+}
+
+.dark .dark-mode-toggle {
+  background: var(--sidebar-bg);
+  color: var(--text-light);
+}
+
+/* Toast notifications */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  color: var(--text-primary);
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+  user-select: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.dark .toast {
+  background: var(--sidebar-bg);
+  color: var(--text-light);
+  box-shadow:
+    0 0 8px var(--glow-cyan),
+    0 0 20px var(--glow-cyan);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c7c7c7;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--glow-cyan);
+  box-shadow: 0 0 6px var(--glow-cyan);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #33ccff;
+  box-shadow: 0 0 10px var(--glow-cyan);
+}
+
+/* Footer styling */
+footer {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 0.5rem;
+  background: var(--secondary-gradient);
+  color: white;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  border-top: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+}
+
+.dark footer {
+  background: var(--sidebar-bg);
+  color: var(--text-light);
+}
+
+/* Custom styles for inline editing input and buttons */
+
+/* Edit box: rounded, subtle inner shadow, bright glow on focus */
+input[type="text"] {
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #111827; /* Tailwind text-gray-900 */
+  background-color: #ffffff; /* white background */
+  border: 1px solid #d1d5db; /* Tailwind border-gray-300 */
+  border-radius: 0.75rem; /* rounded-xl */
+  
+  /* padding: top & bottom for spacing, right for symmetry, left handled by Tailwind pl-* */
+  padding-top: 0.75rem; /* py-3 */
+  padding-bottom: 0.75rem;
+  padding-right: 1rem;
+
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* shadow-sm */
+  transition: all 0.3s ease;
+}
+
+input[type="text"]::placeholder {
+  color: #9ca3af; /* Tailwind placeholder-gray-400 */
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: transparent;
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.3); /* green focus ring */
+}
+
+.dark input[type="text"] {
+  color: #f9fafb; /* Tailwind text-gray-50 */
+  background-color: #1f2937; /* dark mode bg-gray-800 */
+  border-color: #374151; /* dark border-gray-700 */
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.6);
+}
+
+.dark input[type="text"]::placeholder {
+  color: #9ca3af;
+}
+
+.dark input[type="text"]:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.3); /* green focus ring */
+}
+
+/* Buttons */
+button {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  border-radius: 12px;
+}
+
+/* Focus outline for accessibility */
+button:focus {
+  outline: none;
+  box-shadow: 0 0 8px #3897f0;
+}
+
+/* Save button: Instagram blue with glowing background and shadow */
+button[title="Save"] {
+  color: white;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  background: #3897f0;
+  box-shadow:
+    0 0 8px #3897f0,
+    0 0 20px #3897f0;
+  text-shadow: 0 0 4px #1a6ed8;
+  user-select: none;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+button[title="Save"]:hover {
+  background: #2a6ed8;
+  box-shadow:
+    0 0 12px #2a6ed8,
+    0 0 30px #2a6ed8;
+}
+
+/* Cancel button: Instagram red with glowing background and shadow */
+button[title="Cancel"] {
+  color: white;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  background: #ed4956;
+  box-shadow:
+    0 0 8px #ed4956,
+    0 0 20px #ed4956;
+  text-shadow: 0 0 4px #b72f3a;
+  user-select: none;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+button[title="Cancel"]:hover {
+  background: #b72f3a;
+  box-shadow:
+    0 0 12px #b72f3a,
+    0 0 30px #b72f3a;
+}
+
+/* Message bubbles */
+/* Responsive max widths for message bubbles */
+@media (min-width: 1024px) {
+  .max-w-xs {
+    max-width: 20rem; /* 320px */
+  }
+  .lg\:max-w-md {
+    max-width: 28rem; /* 448px */
+  }
+}
+
+/* Scroll container improvements */
+.flex-1.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #c7c7c7 transparent;
+}
+
+/* Scrollbar dark mode */
+.dark .flex-1.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #555555;
+  box-shadow: none;
+}
+
+.dark .flex-1.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #777777;
+}
+
+/* User Info area in light mode: subtle light gradient with dark text */
+.p-6.bg-gradient-to-r.from-indigo-50.to-purple-50 {
+  background: linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%);
+  color: #262626;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  border-radius: 16px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* User Info area in dark mode: dark gray background with white text */
+.dark .p-6.bg-gradient-to-r.from-indigo-50.to-purple-50 {
+  background: #1c1c1c;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  border-radius: 16px;
+}
+
+/* Light mode: email ID text dark */
+.p-6.bg-gradient-to-r.from-indigo-50.to-purple-50 .email-id,
+.p-6.bg-gradient-to-r.from-indigo-50.to-purple-50 p,
+.p-6.bg-gradient-to-r.from-indigo-50.to-purple-50 span {
+  color: #262626;
+}
+
+/* Dark mode: email ID text white */
+.dark .p-6.bg-gradient-to-r.from-indigo-50.to-purple-50 .email-id,
+.dark .p-6.bg-gradient-to-r.from-indigo-50.to-purple-50 p,
+.dark .p-6.bg-gradient-to-r.from-indigo-50.to-purple-50 span {
+  color: white;
+}
+
+/* Online Users heading */
+.flex-1.p-6 > h4 {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 1rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.dark .flex-1.p-6 > h4 {
+  color: #b3b3b3;
+}
+
+/* Online Users list container */
+.flex-1.p-6 > div.space-y-2 {
+  background-color: #fafafa;
+  border-radius: 16px;
+  padding: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.dark .flex-1.p-6 > div.space-y-2 {
+  background-color: #1c1c1c;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Online Users names: dark text in light mode, light text in dark mode */
+.flex-1.p-6 > div.space-y-2 .flex.items-center.space-x-3.p-2.rounded-lg span {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+}
+
+.dark .flex-1.p-6 > div.space-y-2 .flex.items-center.space-x-3.p-2.rounded-lg span {
+  color: #fafafa;
+  font-weight: 500;
+}
+
+/* Chatbox area rounded corners */
+/* Chat messages container background images */
+.flex-1.overflow-y-auto.p-6.space-y-6.bg-gray-50.dark\:bg-gray-900 {
+  background-image: url('/bg-light.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 16px; /* keep rounded corners */
+  position: relative; /* for overlays if needed */
+  font-family: 'Inter', sans-serif;
+  scrollbar-width: thin;
+  scrollbar-color: #c7c7c7 transparent;
+  color: var(--text-primary);
+}
+
+/* Dark mode chat background */
+.dark .flex-1.overflow-y-auto.p-6.space-y-6.bg-gray-50.dark\:bg-gray-900 {
+  background-image: url('/bg-dark.jpg');
+  color: var(--text-light);
+  scrollbar-color: #555555 transparent;
+}
+
+/* Glassmorphism base style for main rounded containers */
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.15); /* translucent white */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s ease, border-color 0.3s ease;
+  color: inherit;
+}
+
+/* Dark mode override for better contrast */
+.dark .glassmorphism {
+  background: rgba(18, 18, 18, 0.4); /* translucent dark */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+}
+
