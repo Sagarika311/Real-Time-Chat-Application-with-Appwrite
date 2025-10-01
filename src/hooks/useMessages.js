@@ -15,7 +15,6 @@ export const useMessages = (user, showToast) => {
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // Load initial messages
   const loadMessages = async () => {
     try {
       const res = await databases.listDocuments(
@@ -30,14 +29,13 @@ export const useMessages = (user, showToast) => {
     }
   };
 
-  // Send new message
   const sendMessage = async (content) => {
     if (!content || !content.trim() || isSending || !user) return;
     setIsSending(true);
     try {
       const doc = {
         userId: user.$id,
-        userName: user.name || user.email, // ✅ fallback if no name
+        userName: user.name,
         content: content.trim(),
       };
       await databases.createDocument(
@@ -51,7 +49,7 @@ export const useMessages = (user, showToast) => {
           Permission.delete(Role.user(user.$id)),
         ]
       );
-      // realtime will handle adding it locally
+      // server will publish realtime event and update list; we keep this function simple
     } catch (err) {
       console.error("Send message error:", err);
       showToast("Failed to send message", "error");
@@ -60,48 +58,37 @@ export const useMessages = (user, showToast) => {
     }
   };
 
-  // Edit message
-  const editMessage = async (id, newContent, extra = {}) => {
-    if (!id || !newContent?.trim()) {
+  const editMessage = async (id, newContent) => {
+    if (!id || !newContent || !newContent.trim()) {
       showToast("Message cannot be empty", "error");
       return;
     }
-  
     try {
-      // Build update object
-      const update = { content: newContent.trim(), edited: true };
-  
-      // Handle editingBy / editingByName clearing or setting
-      if (extra.clearEditingBy) {
-        update.editingBy = null;
-        update.editingByName = null;
-      } else {
-        if (extra.setEditingBy) update.editingBy = extra.setEditingBy;
-        if (extra.setEditingByName) update.editingByName = extra.setEditingByName;
-      }
-  
-      // Update in database
-      await databases.updateDocument(DATABASE_ID, MESSAGES_COLLECTION_ID, id, update);
-  
-      // Optimistic update
+      // update content AND mark as edited
+      await databases.updateDocument(DATABASE_ID, MESSAGES_COLLECTION_ID, id, {
+        content: newContent.trim(),
+        edited: true,
+      });
+
+      // optimistic update for local state
       setMessages((prev) =>
-        prev.map((m) => (m.$id === id ? { ...m, ...update } : m))
+        prev.map((m) =>
+          m.$id === id ? { ...m, content: newContent.trim(), edited: true } : m
+        )
       );
-  
-      if (!extra.setEditingBy && !extra.setEditingByName) {
-        showToast("Message updated", "success");
-      }
+
+      showToast("Message updated", "success");
     } catch (err) {
       console.error("Update failed:", err);
       showToast("Failed to update message", "error");
     }
   };
 
-  // Delete message
   const deleteMessage = async (id) => {
     if (!id) return;
     try {
       await databases.deleteDocument(DATABASE_ID, MESSAGES_COLLECTION_ID, id);
+      // optimistic removal handled by realtime, but also ensure local removal if needed
       setMessages((prev) => prev.filter((m) => m.$id !== id));
       showToast("Message deleted", "success");
     } catch (err) {
@@ -110,7 +97,6 @@ export const useMessages = (user, showToast) => {
     }
   };
 
-  // Realtime listener
   useEffect(() => {
     if (!user) return;
 
@@ -120,16 +106,12 @@ export const useMessages = (user, showToast) => {
       `databases.${DATABASE_ID}.collections.${MESSAGES_COLLECTION_ID}.documents`,
       (response) => {
         try {
-          if (response.events.some((e) => e.endsWith(".create"))) {
+          if (response.events.includes("databases.*.collections.*.documents.*.create")) {
             setMessages((prev) => [...prev, response.payload]);
-          } else if (response.events.some((e) => e.endsWith(".delete"))) {
+          } else if (response.events.includes("databases.*.collections.*.documents.*.delete")) {
             setMessages((prev) => prev.filter((m) => m.$id !== response.payload.$id));
-          } else if (response.events.some((e) => e.endsWith(".update"))) {
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.$id === response.payload.$id ? response.payload : m
-              )
-            );
+          } else if (response.events.includes("databases.*.collections.*.documents.*.update")) {
+            setMessages((prev) => prev.map((m) => (m.$id === response.payload.$id ? response.payload : m)));
           }
         } catch (err) {
           console.error("Realtime handler error:", err);
@@ -142,12 +124,8 @@ export const useMessages = (user, showToast) => {
         if (typeof unsub === "function") unsub();
       } catch (e) {}
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
-
-  // ✅ Auto scroll to bottom when new messages arrive
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
 
   return {
     messages,
