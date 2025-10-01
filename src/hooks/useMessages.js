@@ -15,6 +15,7 @@ export const useMessages = (user, showToast) => {
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Load initial messages
   const loadMessages = async () => {
     try {
       const res = await databases.listDocuments(
@@ -29,13 +30,14 @@ export const useMessages = (user, showToast) => {
     }
   };
 
+  // Send new message
   const sendMessage = async (content) => {
     if (!content || !content.trim() || isSending || !user) return;
     setIsSending(true);
     try {
       const doc = {
         userId: user.$id,
-        userName: user.name,
+        userName: user.name || user.email, // ✅ fallback if no name
         content: content.trim(),
       };
       await databases.createDocument(
@@ -49,7 +51,7 @@ export const useMessages = (user, showToast) => {
           Permission.delete(Role.user(user.$id)),
         ]
       );
-      // server will publish realtime event and update list; we keep this function simple
+      // realtime will handle adding it locally
     } catch (err) {
       console.error("Send message error:", err);
       showToast("Failed to send message", "error");
@@ -58,37 +60,42 @@ export const useMessages = (user, showToast) => {
     }
   };
 
-  const editMessage = async (id, newContent) => {
-    if (!id || !newContent || !newContent.trim()) {
+  // Edit message
+  const editMessage = async (id, newContent, extra = {}) => {
+    if (!id || !newContent?.trim()) {
       showToast("Message cannot be empty", "error");
       return;
     }
     try {
-      // update content AND mark as edited
-      await databases.updateDocument(DATABASE_ID, MESSAGES_COLLECTION_ID, id, {
+      const update = {
         content: newContent.trim(),
         edited: true,
-      });
+        ...extra, // ✅ supports editingBy, editingByName, clearing them, etc.
+      };
 
-      // optimistic update for local state
+      await databases.updateDocument(DATABASE_ID, MESSAGES_COLLECTION_ID, id, update);
+
+      // optimistic update
       setMessages((prev) =>
         prev.map((m) =>
-          m.$id === id ? { ...m, content: newContent.trim(), edited: true } : m
+          m.$id === id ? { ...m, ...update } : m
         )
       );
 
-      showToast("Message updated", "success");
+      if (!extra.setEditingBy && !extra.setEditingByName) {
+        showToast("Message updated", "success");
+      }
     } catch (err) {
       console.error("Update failed:", err);
       showToast("Failed to update message", "error");
     }
   };
 
+  // Delete message
   const deleteMessage = async (id) => {
     if (!id) return;
     try {
       await databases.deleteDocument(DATABASE_ID, MESSAGES_COLLECTION_ID, id);
-      // optimistic removal handled by realtime, but also ensure local removal if needed
       setMessages((prev) => prev.filter((m) => m.$id !== id));
       showToast("Message deleted", "success");
     } catch (err) {
@@ -97,6 +104,7 @@ export const useMessages = (user, showToast) => {
     }
   };
 
+  // Realtime listener
   useEffect(() => {
     if (!user) return;
 
@@ -106,12 +114,16 @@ export const useMessages = (user, showToast) => {
       `databases.${DATABASE_ID}.collections.${MESSAGES_COLLECTION_ID}.documents`,
       (response) => {
         try {
-          if (response.events.includes("databases.*.collections.*.documents.*.create")) {
+          if (response.events.some((e) => e.endsWith(".create"))) {
             setMessages((prev) => [...prev, response.payload]);
-          } else if (response.events.includes("databases.*.collections.*.documents.*.delete")) {
+          } else if (response.events.some((e) => e.endsWith(".delete"))) {
             setMessages((prev) => prev.filter((m) => m.$id !== response.payload.$id));
-          } else if (response.events.includes("databases.*.collections.*.documents.*.update")) {
-            setMessages((prev) => prev.map((m) => (m.$id === response.payload.$id ? response.payload : m)));
+          } else if (response.events.some((e) => e.endsWith(".update"))) {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.$id === response.payload.$id ? response.payload : m
+              )
+            );
           }
         } catch (err) {
           console.error("Realtime handler error:", err);
@@ -124,8 +136,12 @@ export const useMessages = (user, showToast) => {
         if (typeof unsub === "function") unsub();
       } catch (e) {}
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // ✅ Auto scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return {
     messages,
