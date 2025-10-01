@@ -66,22 +66,28 @@ export const useMessages = (user, showToast) => {
       showToast("Message cannot be empty", "error");
       return;
     }
+  
     try {
-      const update = {
-        content: newContent.trim(),
-        edited: true,
-        ...extra, // ✅ supports editingBy, editingByName, clearing them, etc.
-      };
-
+      // Build update object
+      const update = { content: newContent.trim(), edited: true };
+  
+      // Handle editingBy / editingByName clearing or setting
+      if (extra.clearEditingBy) {
+        update.editingBy = null;
+        update.editingByName = null;
+      } else {
+        if (extra.setEditingBy) update.editingBy = extra.setEditingBy;
+        if (extra.setEditingByName) update.editingByName = extra.setEditingByName;
+      }
+  
+      // Update in database
       await databases.updateDocument(DATABASE_ID, MESSAGES_COLLECTION_ID, id, update);
-
-      // optimistic update
+  
+      // Optimistic update
       setMessages((prev) =>
-        prev.map((m) =>
-          m.$id === id ? { ...m, ...update } : m
-        )
+        prev.map((m) => (m.$id === id ? { ...m, ...update } : m))
       );
-
+  
       if (!extra.setEditingBy && !extra.setEditingByName) {
         showToast("Message updated", "success");
       }
