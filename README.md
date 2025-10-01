@@ -93,7 +93,7 @@ VITE_APPWRITE_PROJECT_ID=your_project_id
 
 | Auth Pages                 | Chat UI                       |
 | -------------------------- | ----------------------------- |
-| ![Login](assets/login.png) ![Signup](assets/signup.png) | ![Chat Light](assets/chat-light.png) <br> ![Chat Dark](assets/chat-dark.png) |
+| ![Login](src/assets/login.png) ![Signup](src/assets/signup.png) | ![Chat Light](assets/src/chat-light.png) <br> ![Chat Dark](src/assets/chat-dark.png) |
 
 ---
 
