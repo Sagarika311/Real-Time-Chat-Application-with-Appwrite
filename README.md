@@ -54,7 +54,7 @@ A modern **chat application** built with **React, Appwrite, and TailwindCSS** fe
 ### 1️⃣ Clone the repository
 
 ```bash
-git clone https://github.com/your-username/chat-app.git
+git clone https://github.com/Sagarika311/chat-app.git
 cd chat-app
 ```
 
